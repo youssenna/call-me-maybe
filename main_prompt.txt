@@ -1,0 +1,14 @@
+you will create a function calling tool that translates natural language
+prompts into structured function calls. Given a question like "What is the sum of 40 and
+2?", your solution should not return 42, but instead provide:
+• The function name: fn_add_numbers
+• The arguments: {"a": 40, "b": 2}
+i will share with you a list of all my availble functions name 
+with there description and return types and you need to 
+create json object must contain exactly the following keys
+
+'prompt' (string): the natural language request
+'name' (string): the name of the function to call on my available function to ansower the request prompt
+'paramters' (object):  All required arguments with the correct types
+
+-list of my available functions:

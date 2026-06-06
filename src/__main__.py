@@ -22,27 +22,27 @@ if __name__ == '__main__':
         parser = Parser(functions_def_file=Path(argv[2]),
                         func_call_test_file=Path(argv[4]),
                         output_file=argv[-1])
-        print(parser)
+        # print(parser)
         model = Small_LLM_Model()
-        fonctions = parser.functions
+        functions = parser.functions
         prompts = parser.prompts
         
         vocab_file = model.get_path_to_vocab_file()
-        tokonizer_file = model.get_path_to_tokenizer_file()
-        merge_file = model.get_path_to_merges_file()
-        with (open(vocab_file, 'r') as f1, open(tokonizer_file, 'r') as f2,
-              open(merge_file, 'r') as f3):
+        with open(vocab_file, 'r') as f1, open('main_prompt.txt', 'r') as f2:
             vocab_dict = json.load(f1)
             vocab_dict_miror = {v: k for k, v in vocab_dict.items()}
-            # print(vocab_dict_miror)
-            print('=' * 50, 'tokonizer file', '=' * 50)
-            print(f2.read())
-            print('=' * 50, 'merge file', '=' * 50)
-            print(f3.read())
+            main_prompt = f2.read() + str(functions)
+            print(main_prompt)
+        # exit(0)
         for prompt in prompts:
             prompt_dict = prompt.model_dump()
-            print(prompt_dict)
-            tokens = model.encode(prompt_dict['prompt'] + 'a and b = ')
+            json_object: str = '{"prompt": '
+            main_prompt += f'\n-User request:\n{prompt_dict}\n-JSON object:'\
+                           f'\n{json_object}'
+            print(main_prompt)
+            
+            # exit(0)
+            tokens = model.encode(main_prompt)
             print(tokens.tolist()[0])
             tokens = tokens.tolist()[0]
             
