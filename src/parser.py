@@ -8,13 +8,13 @@ from sys import exit
 
 class VariableType(BaseModel):
     model_config = ConfigDict(extra='forbid')
-    type: Literal['number', "string", 'object', 'boolean']
+    type: Literal['number', "string", 'boolean']
 
 
 class FunctionDefinetion(BaseModel):
     model_config = ConfigDict(extra='forbid')
-    description: str
     name: str
+    description: str
     parameters: Dict[str, VariableType]
     returns: VariableType
 
