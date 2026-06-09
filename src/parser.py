@@ -2,8 +2,7 @@ from pydantic import (BaseModel, model_validator, FilePath,
                       TypeAdapter, ConfigDict, Field)
 from pathlib import Path
 import json
-from typing import List, Dict, Literal, Any
-from sys import exit
+from typing import List, Dict, Literal, Any, Self
 
 
 class VariableType(BaseModel):
@@ -23,6 +22,7 @@ class FuctionCallingTest(BaseModel):
     model_config = ConfigDict(extra='forbid')
     prompt: str = Field(min_length=1)
 
+
 class Parser(BaseModel):
     model_config = ConfigDict(extra='forbid')
     functions_def_file: FilePath
@@ -32,42 +32,45 @@ class Parser(BaseModel):
     functions: List[Any] = []
 
     @model_validator(mode='after')
-    def parse_files(self):
+    def parse_files(self) -> Self:
         path = Path(self.output_file)
         path.parent.mkdir(parents=True, exist_ok=True)
         Path(self.output_file).write_text('')
 
         self.functions.extend(self._parse_functions_def_file(
-            self.functions_def_file))
-        
+                              self.functions_def_file))
+
         self.prompts.extend(self._parse_prompts_file(
             self.func_call_test_file))
-        
+
         return self
-            
+
     def _parse_functions_def_file(self, functions_def_file: FilePath
-                                   ) -> List[Any]:
+                                  ) -> List[FunctionDefinetion]:
         with open(functions_def_file, 'r') as f:
-            
+
             data = f.read()
-            
+
             functions_adapter: TypeAdapter = TypeAdapter(
                 list[FunctionDefinetion])
-            
-            valid_functions = functions_adapter.validate_python(
+
+            valid_functions: List[FunctionDefinetion] = \
+                functions_adapter.validate_python(
                 json.loads(data))
-            
+
             if not valid_functions:
                 raise ValueError('can not proccess empty list')
-            
+
             return valid_functions
 
-    def _parse_prompts_file(self, func_call_test_file: FilePath) -> List[Any]:
+    def _parse_prompts_file(self, func_call_test_file: FilePath
+                            ) -> List[FuctionCallingTest]:
         with open(func_call_test_file, 'r') as f:
             data = f.read()
             prompt_adapter: TypeAdapter = TypeAdapter(
                 list[FuctionCallingTest])
-            valid_prompts = prompt_adapter.validate_python(json.loads(data))
+            valid_prompts: List[FuctionCallingTest] = \
+                prompt_adapter.validate_python(json.loads(data))
             print()
             if not valid_prompts:
                 raise ValueError('can not proccess empty list')
