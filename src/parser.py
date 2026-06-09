@@ -1,5 +1,5 @@
 from pydantic import (BaseModel, model_validator, FilePath,
-                      TypeAdapter, ConfigDict)
+                      TypeAdapter, ConfigDict, Field)
 from pathlib import Path
 import json
 from typing import List, Dict, Literal, Any
@@ -21,7 +21,7 @@ class FunctionDefinetion(BaseModel):
 
 class FuctionCallingTest(BaseModel):
     model_config = ConfigDict(extra='forbid')
-    prompt: str
+    prompt: str = Field(min_length=1)
 
 class Parser(BaseModel):
     model_config = ConfigDict(extra='forbid')
