@@ -16,7 +16,7 @@ class VariableType(BaseModel):
     '''
 
     model_config = ConfigDict(extra='forbid')
-    type: Literal['number', "string", 'boolean']
+    type: Literal['number', "string", 'boolean', 'integer']
 
 
 class FunctionDefinetion(BaseModel):

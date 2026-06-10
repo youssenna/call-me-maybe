@@ -22,7 +22,7 @@ debug_bonus:
 
 
 clean:
-	rm -rf __pycache__ .mypy_cache cache .venv data/output
+	rm -rf __pycache__ .mypy_cache cache .venv data/output */__pycache__
 
 lint:
 	uv run flake8 .  --exclude='llm_sdk cache .venv'
