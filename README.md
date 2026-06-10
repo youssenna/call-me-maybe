@@ -137,23 +137,28 @@ I validated the project using the following manual and automated tests:
 
 ## Example usage
 
-```bash
-# Run a test using the default Qwen model 'Qwen/Qwen3-0.6B'
-uv run python -m src \
-  --functions_definition data/input/functions_definition.json \
-  --input data/input/function_calling_tests.json \
-  --output data/output/function_calls.json
 
-# Run a test using the default Qwen model ' Qwen/Qwen2.5-1.5B-Instruct'
+Given the prompt: *"What is the sum of 2 and 3?"* and the function definition for `add_numbers` in `functions_definition.json`, the program will generate the following output in `output_file.json`:
 
-uv run python -m src \
-  --functions_definition data/input/functions_definition.json \
-  --input data/input/function_calling_tests.json \
-  --output data/output/function_calls.json --model Qwen/Qwen2.5-1.5B-Instruct
-
-# Check output file
-cat data/output/function_calls.json
+```json
+{
+  "prompt": "What is the sum of 2 and 3?",
+  "name": "add_numbers",
+  "parameters": {
+      "a": 2,
+      "b": 3
+    }
+}
 ```
+
+my code is reuseable and can handle any function definitions and prompts as long as they are valid according to the defined schemas. The constrained decoding mechanism ensures that the output will always be syntactically correct JSON, regardless of the complexity of the functions or the prompts.
+
+you can clone the repository and run it with your own function definitions and prompts by following the instructions in the "Instructions" section above. Just make sure to update the paths to your custom `functions_definition.json` and `function_calling_tests.json` files when running the program.
+
+
+
+
+
 
 ---
 
