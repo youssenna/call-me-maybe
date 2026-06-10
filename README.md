@@ -158,6 +158,36 @@ you can clone the repository and run it with your own function definitions and p
 
 
 
+## 👨‍💻 Authors
+
+<table align="center">
+  <tr>
+    <td align="center">
+      <a href="https://github.com/youssenna">
+        <img src="my_image.jpeg" width="200px" height="200px" alt="yousenna"/>
+        <br />
+        <sub><b>Youssef Ennajar</b></sub>
+      </a>
+      <br />
+      <a href="https://github.com/youssenna" title="GitHub">
+        <img src="https://img.shields.io/badge/GitHub-100000?style=flat&logo=github&logoColor=white" />
+      </a>
+      <a href="https://www.linkedin.com/in/youssef-ennajar-213985253/" title="LinkedIn">
+        <img src="https://img.shields.io/badge/LinkedIn-0077B5?style=flat&logo=linkedin&logoColor=white" />
+      </a>
+      <a href="https://www.youtube.com/@codingwithmoljlaba" title="YouTube">
+        <img src="https://img.shields.io/badge/YouTube-FF0000?style=flat&logo=youtube&logoColor=white" />
+    </td>
+  </tr>
+</table>
+
+---
+
+<p align="center">
+  Made with ❤️ at 1337 bengurir
+</p>
+
+
 
 
 ---
