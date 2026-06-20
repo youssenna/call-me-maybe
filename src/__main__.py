@@ -7,6 +7,7 @@ import json
 from pathlib import Path
 from llm_sdk.llm_sdk import Small_LLM_Model
 import numpy as np
+import argparse
 
 
 def get_name_of_valid_function(model: Small_LLM_Model,
@@ -105,9 +106,6 @@ def valid_tokens_for_number_params(vocab_dict: Dict[int, str]) -> List[int]:
 def find_len_of_last_digit(digits_llm_output: str, llm_output: str) -> int:
     '''
     this function will find the length of the last digit in the llm output
-    because I want to add ',' after the number if the number is too long to
-    prevent the model from generating very long numbers that may cause
-    overflow
 
     :param digits_llm_output: string that contains only the digits that the
     model generated for the number parameter
@@ -136,12 +134,7 @@ def find_paramters(model: Small_LLM_Model,
                    vocab_dict: Dict[str, int]) -> str:
     '''
     this function will find the parameters of the valid function that I will
-    call in the end and I will get it by sending the prompt to the model and
-    get the output and compare it with the valid tokens for each parameter
-    type and I will do that until I get all the parameters of the valid
-    function and I will return the parameters in json format as a string
-    to be added in the final json object that I will save it in the output
-    file
+    call in the end
 
     :param model: model to use it in encoding and getting logits from input
     ids
@@ -152,8 +145,7 @@ def find_paramters(model: Small_LLM_Model,
     :type prompt: str
 
     :param available_functions: list of available functions that I will
-    compare the model output with it to get the valid function name and also
-    to get the parameters of the valid function
+    compare the model output with it to get the valid function name
     :type available_functions: List[FunctionDefinetion]
 
     :param valid_function: name of the valid function that I will call in the
@@ -260,17 +252,14 @@ def function_calling(model: Small_LLM_Model, main_prompt: str,
     this function will be responsible for the main logic of the program and it
     will call the get_name_of_valid_function and find_parameters functions to
     get the name of the valid function and its parameters for each prompt in
-    the prompts list and it will return the final json object that I will save
-    in the output file and it will also print the json object in a readable
-    format in the console
+    the prompts list
 
     :param model: model to use it in encoding and getting logits from input
     ids
     :type model: Small_LLM_Model
 
     :param main_prompt: main prompt that I will add the current prompt and the
-    json object that I will get from the model to it to get the name of the
-    valid function and its parameters
+    json object 
     :type main_prompt: str
 
     :param prompts: list of prompts that I will send to the model to get the
@@ -278,8 +267,7 @@ def function_calling(model: Small_LLM_Model, main_prompt: str,
     :type prompts: List[FuctionCallingTest]
 
     :param functions: list of available functions that I will compare the
-    model output with it to get the valid function name and also to get the
-    parameters of the valid function
+    model output with it to get the valid function name 
     :type functions: List[FunctionDefinetion]
 
     :param vocab_dict_miror: dictionary mapping token IDs to their string
@@ -328,6 +316,7 @@ def function_calling(model: Small_LLM_Model, main_prompt: str,
         final_json_obj += json_object
         if i != len(prompts) - 1:
             final_json_obj += ','
+        print(main_prompt)
         print('-' * 100, '\ngoted json object I will save it later in '
               f'output file "{output_file}"\n', '#' * 100, '\n')
         j_obj = json.loads(json_object)
@@ -338,68 +327,63 @@ def function_calling(model: Small_LLM_Model, main_prompt: str,
     return final_json_obj
 
 
-if __name__ == '__main__':
-    error_msge = str('error invalid arguments try this syntax:\n'
-                     'uv run python -m src [--functions_definition'
+def parse_args() -> argparse.Namespace:
+    error_msge = str('uv run python -m src [--functions_definition'
                      ' <function_definition_file>] [--input'
                      ' <input_file>] [--output <output_file>] or\n'
                      'uv run python -m src [--functions_definition'
                      ' <function_definition_file>] [--input'
                      ' <input_file>] [--output <output_file>] --model'
                      ' Qwen/Qwen2.5-1.5B-Instruct')
+    arg_parse = argparse.ArgumentParser('call_me_maybe',
+                                        usage=error_msge,
+                                        description='functions calling grneration tool')
+    arg_parse.add_argument('--functions_definition')
+    arg_parse.add_argument('--input')
+    arg_parse.add_argument('--output')
+    arg_parse.add_argument('--model')
+    args_ = arg_parse.parse_args()
+    if not args_.functions_definition:
+        args_.functions_definition = 'data/input/functions_definition.json'
+    if not args_.input:
+        args_.input = 'data/input/function_calling_tests.json'
+    if not args_.output:
+        args_.output = 'data/output/output_file.json'
+    if not args_.model:
+        args_.model = 'Qwen/Qwen3-0.6B'
+    return args_
+
+
+def main() -> None:
+    args = parse_args()
+    output_file: str = args.output
+    function_def_file = Path(args.functions_definition)
+    func_call_test_file = Path(args.input)
+    model_name: str = args.model
+    parser = Parser(functions_def_file=function_def_file,
+                    func_call_test_file=func_call_test_file,
+                    output_file=output_file)
+    model = Small_LLM_Model(model_name=model_name)
+    
+    functions: List[FunctionDefinetion] = parser.functions
+    prompts: List[FuctionCallingTest] = parser.prompts
+
+    vocab_file = model.get_path_to_vocab_file()
+    with open(vocab_file, 'r') as f1, open('main_prompt.txt', 'r') as f2:
+        vocab_dict = json.load(f1)
+        vocab_dict_miror = {v: k for k, v in vocab_dict.items()}
+        main_prompt = f2.read() + str(functions) + '\n-User request:\n'
+    final_json_obj = function_calling(model, main_prompt, prompts,
+                                      functions, vocab_dict_miror,
+                                      vocab_dict, parser.output_file)
+    with open(parser.output_file, 'w') as f:
+        obj = json.loads(final_json_obj)
+        json.dump(obj, f, indent=4)
+
+        
+if __name__ == '__main__':
     try:
-        if len(argv) != 1 and len(argv) != 7 and len(argv) != 9:
-            raise ValueError(error_msge)
-        if len(argv) == 1:
-            output_file = 'data/output/output_file.json'
-            function_def_file = Path('data/input/functions_definition.json')
-            func_call_test_file = \
-                Path('data/input/function_calling_tests.json')
-            parser = Parser(functions_def_file=function_def_file,
-                            func_call_test_file=func_call_test_file,
-                            output_file=output_file)
-        else:
-            if not all([len(argv) == 7 or len(argv) == 9,
-                        argv[1] == '--functions_definition',
-                        argv[3] == '--input', argv[5] == '--output']):
-                raise ValueError(error_msge)
-
-            if len(argv) == 9:
-                if not all([argv[7] == '--model',
-                            argv[-1] == 'Qwen/Qwen2.5-1.5B-Instruct']):
-                    raise ValueError(error_msge)
-            parser = Parser(functions_def_file=Path(argv[2]),
-                            func_call_test_file=Path(argv[4]),
-                            output_file=argv[6])
-            model_name: str = argv[-1]
-        # model = Small_LLM_Model(model_name=model_name)
-        if len(argv) == 9:
-            print(' '*40, 'Current model')
-            print('#'*100)
-            print('#', ' '*40, model_name)
-            print('#'*100)
-            model = Small_LLM_Model(model_name=model_name)
-        else:
-            print(' '*40, 'Current model')
-            print('#'*100)
-            print('#', ' '*40, 'Qwen/Qwen3-0.6B')
-            print('#'*100)
-            model = Small_LLM_Model()
-
-        functions: List[FunctionDefinetion] = parser.functions
-        prompts: List[FuctionCallingTest] = parser.prompts
-
-        vocab_file = model.get_path_to_vocab_file()
-        with open(vocab_file, 'r') as f1, open('main_prompt.txt', 'r') as f2:
-            vocab_dict = json.load(f1)
-            vocab_dict_miror = {v: k for k, v in vocab_dict.items()}
-            main_prompt = f2.read() + str(functions) + '\n-User request:\n'
-        final_json_obj = function_calling(model, main_prompt, prompts,
-                                          functions, vocab_dict_miror,
-                                          vocab_dict, parser.output_file)
-        with open(parser.output_file, 'w') as f:
-            obj = json.loads(final_json_obj)
-            json.dump(obj, f, indent=4)
+        main()
 
     except ValidationError as e:
         for err in e.errors():
