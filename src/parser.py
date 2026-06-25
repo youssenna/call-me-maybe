@@ -28,8 +28,8 @@ class FunctionDefinetion(BaseModel):
     '''
 
     model_config = ConfigDict(extra='forbid')
-    name: str
-    description: str
+    name: str = Field(min_length=2)
+    description: str = Field(min_length=5)
     parameters: Dict[str, VariableType]
     returns: VariableType
 
