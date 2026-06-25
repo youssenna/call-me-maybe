@@ -123,10 +123,10 @@ def find_valid_paramters(model: Small_LLM_Model,
     i = 0
     while i < len(func_object.parameters):
         llm_output: str = ''
-        print(encoded_prompt)
+        # print(encoded_prompt)
         encoded_prompt.extend(model.encode(args_name[i] + '": ').squeeze().tolist())
         
-        print()
+        # print()
         if func_object.parameters[args_name[i]].type == 'string':
             encoded_prompt += [model.encode('"').squeeze().tolist()]
             while '"' not in llm_output:
@@ -138,20 +138,26 @@ def find_valid_paramters(model: Small_LLM_Model,
 
                 llm_output = reversed_vocab_dict[int(logits.argmax())].\
                     replace('Ġ', ' ')
+                # print('llm output:', llm_output)
 
+                # print('*' * 30, 'before\n', encoded_prompt, '\n')
                 if '"' not in llm_output:
-                    encoded_prompt += [model.encode(llm_output).squeeze().tolist()]
+                    encoded_prompt.extend([model.encode(llm_output).squeeze().tolist()])
                 else:
-                    encoded_prompt += [model.encode(llm_output[:llm_output.index('"')]).squeeze().tolist()]
+                    remaining_output: str = llm_output[:llm_output.index('"')]
+                    # print('fuck[', llm_output, ']')
+                    if remaining_output:
+                        encoded_prompt.extend([model.encode(remaining_output).squeeze().tolist()])
+                # print('*' * 30, 'after\n', encoded_prompt, '\n')
             encoded_prompt += [model.encode('"').squeeze().tolist()]
         elif (func_object.parameters[args_name[i]].type == 'number' or
               func_object.parameters[args_name[i]].type == 'boolean' or
               func_object.parameters[args_name[i]].type == 'integer'):
             digits_llm_output: str = ''
             while ',' not in llm_output and '}' not in llm_output:
-                print(llm_output)
+                # print(llm_output)
                 # prompt_to_tokens = model.encode(prompt).tolist()[0]
-                print(encoded_prompt)
+                # print(encoded_prompt)
                 non_filtred_logits: np.ndarray = np.\
                     array(model.get_logits_from_input_ids(encoded_prompt))
 
@@ -191,5 +197,7 @@ def find_valid_paramters(model: Small_LLM_Model,
         else:
             encoded_prompt += [model.encode('}').squeeze().tolist()]
         i += 1
+    # print(encoded_prompt)
+    # exit()
     return model.decode(encoded_prompt[prompt_len_at_start:])
 
