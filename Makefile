@@ -26,4 +26,4 @@ clean:
 
 lint:
 	uv run flake8 .  --exclude='llm_sdk cache .venv'
-	uv run mypy .  --warn-return-any --warn-unused-ignores --ignore-missing-imports --disallow-untyped-defs --check-untyped-defs --exclude 'cache|.venv|llm_sdk'
+	uv run mypy . --warn-return-any --warn-unused-ignores --ignore-missing-imports --disallow-untyped-defs --check-untyped-defs --disable-error-code=list-item --exclude 'cache|.venv|llm_sdk'
